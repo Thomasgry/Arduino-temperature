@@ -1,0 +1,124 @@
+ <head>
+   <title>ESP8266 Temperature</title>
+   <style type='text/css'>
+     body{
+       width:500px;
+       margin:auto;
+       
+     }
+     body > div{
+       background-color:#CEB5DE;
+       border-radius: 25px;
+       padding:10px;
+       margin:10px 0;
+     }
+     .p0{
+       color:grey;
+       font-size:2em;
+     }
+     .p2{
+       width:200px;
+       text-align:right;
+       display:inline-block;
+     }
+     .p3{
+       border-radius: 25px;
+       background-color:#83FDB2;
+       width:150px;
+       box-shadow: 8px 8px 5px grey;
+     }
+     .bs{
+       cursor:pointer;
+       text-align:center;
+       margin:5px auto 5px auto;
+     }
+     .p4{  
+       width:100px;
+       height:100px;
+       background:#fafafa;
+       box-shadow:2px 2px 8px #aaa;
+       font:bold 13px Arial;
+       border-radius:50%;
+       display: flex;
+       justify-content: center;
+       align-items: center;
+     }
+     input{
+       width:150px;
+     }
+     #cS{
+       position: fixed;
+       bottom: 0;
+       background-color:#F5A9A9;
+       width:480px;
+       display:none;
+     }
+   </style>
+ </head>
+ <body onload='olP();'>
+   <div id='cS'>&nbsp;</div>
+   <div>
+     <div class='p0'></div>
+     <div class='p1'>
+       <div class='p2'>Temp&eacute;rature : <span id='temp'></span>&#8451;</div>
+     </div>
+     <div class='bs p3' onclick='led()'>LED</div><br>
+     <div class='bs p3' onclick='name()'>Show name</div><br>
+   </div>
+   <a href='config'>Page de configuration</a>
+<script type='text/javascript'>
+ var d=document,w=window,diff = 0,id=-1, uriP='rest/temperature';
+ function e(id){ return d.getElementById(id);}
+ 
+ function name(){ send("rest/name");}
+ function led(){ send("rest/led");}
+ function u(){ send(uriP);}
+ function send(uri) {
+   if (x && x.readyState != 0) {
+     x.abort();
+   }
+   var x = new XMLHttpRequest();
+   x.onreadystatechange = function() {
+     if (x.readyState == 4){
+       if( x.status == 200) {
+         var resp = x.responseText;
+         var obj = JSON.parse(resp);
+         if (typeof obj.message != 'undefined') {
+           cS.innerHTML = obj.message;
+           cS.style.display='block';
+           setTimeout(function(){cS.style.display='none';}, 3000);
+         }
+         if (typeof obj.temperature != 'undefined') {
+           e('temp').innerHTML = obj.temperature
+         }
+       }
+       if (x.status== 404) {
+         cS.innerHTML = 'Page not found';
+         cS.style.display='block';
+         setTimeout(function(){cS.style.display='none';}, 3000);
+       }
+        if (x.status== 500) {
+         var resp = x.responseText;
+         var obj = JSON.parse(resp);
+         cS.innerHTML = 'Server error';
+         cS.style.display='block';
+         setTimeout(function(){cS.style.display='none';}, 3000);
+         e('temp').innerHTML = obj.temperature
+       }
+     }
+   };
+   x.timeout = 4000;
+   x.ontimeout = function () { 
+     cS.innerHTML = 'Temperature not reachable !';
+     cS.style.display='block';
+     setTimeout(function(){cS.style.display='none';}, 3000); 
+     };
+   x.open('GET', uri, true);
+   x.send();
+ }
+ function olP(){
+   setInterval(u, 2000);u()
+ }
+</script>
+ </body>
+</html>
